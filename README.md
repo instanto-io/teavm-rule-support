@@ -56,6 +56,100 @@ returns the original test statement unchanged.
 Without this module, `TeaVMTestRunner` still runs its normal `@Before`,
 `@Test`, and `@After` methods, but JUnit `@Rule` members are not applied.
 
+## Rule kinds
+
+Both JUnit rule interfaces are supported, declared either as a field or as a
+no-argument method.
+
+### TestRule
+
+A `TestRule` receives the statement and a `Description` naming the test class
+and method, which suits a rule that sets something up and tears it down:
+
+```java
+@Rule
+public final TestRule resource = new ResourceRule();
+```
+
+### MethodRule
+
+A `MethodRule` receives the statement, the `FrameworkMethod` and the test
+instance. Use it when the rule needs the method itself rather than a
+description of it: to read an annotation that carries behaviour, to reflect
+over the method, or to evaluate the body more than once.
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@interface Retry {
+    int times();
+}
+
+static final class RetryRule implements MethodRule {
+    @Override
+    public Statement apply(Statement base, FrameworkMethod method, Object target) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                Retry retry = method.getAnnotation(Retry.class);
+                int required = retry == null ? 1 : retry.times();
+                for (int attempt = 0; attempt < required; attempt++) {
+                    base.evaluate();
+                }
+            }
+        };
+    }
+}
+```
+
+```java
+@Rule
+public final RetryRule retry = new RetryRule();
+
+@Test
+@Retry(times = 3)
+public void theBodyRunsThreeTimes() {
+    // Evaluated once per attempt.
+}
+```
+
+The `FrameworkMethod` is a real one, so `method.getName()` and
+`method.getAnnotation(...)` answer as they do on the JVM. That relies on the
+test method being reflectable, which the bundled policy arranges; see
+[Supported scope](#supported-scope) for where that selection ends.
+
+A `Description` cannot do this. It exposes the annotations, but a rule that
+needs the method itself needs the `FrameworkMethod`.
+
+### Rules declared as methods
+
+A no-argument method annotated `@Rule` is applied like a field, and returns
+either kind:
+
+```java
+@Rule
+public TestRule resource() {
+    return new ResourceRule();
+}
+```
+
+### Ordering
+
+Rules on one class are ordered by `@Rule(order = ...)`. JUnit treats a higher
+value as inner, so the lower value wraps the other, setting up first and tearing
+down last:
+
+```java
+@Rule(order = 0)
+public final TestRule resource = new ResourceRule();
+
+@Rule(order = 1)
+public final RetryRule retry = new RetryRule();
+```
+
+Inherited rules are applied too, and a type implementing both interfaces is
+applied once as a `TestRule`, matching JUnit 4.13.
+
 ## Add the dependency
 
 The project must already use JUnit 4 and TeaVM's JUnit runner. Add this module as
@@ -145,3 +239,9 @@ The test suite compiles its fixtures with TeaVM and runs them in Chrome:
 ```bash
 mvn test
 ```
+
+## Shared build parent
+
+For local builds, install the shared parent from a sibling `instanto-poms`
+checkout with `mvn -f ../instanto-poms/pom.xml install`. Release instructions
+are in `instanto-poms/RELEASING.md`.
