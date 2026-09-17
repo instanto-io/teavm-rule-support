@@ -19,44 +19,51 @@ import org.teavm.vm.spi.TeaVMPlugin;
  * is compiled in, rules are silently ignored, and tests pass without their rules ever applying.
  */
 public final class RuleSupportPlugin implements TeaVMPlugin {
-    private static final String PLUGIN = RuleSupportPlugin.class.getName().replace('.', '/') + ".class";
-    private static final String SHADOWED = "org/teavm/junit/TestEntryPoint.class";
+  private static final String PLUGIN =
+      RuleSupportPlugin.class.getName().replace('.', '/') + ".class";
+  private static final String SHADOWED = "org/teavm/junit/TestEntryPoint.class";
 
-    @Override
-    public void install(TeaVMHost host) {
-        verifyRuleSupportIsNotShadowed();
+  @Override
+  public void install(TeaVMHost host) {
+    verifyRuleSupportIsNotShadowed();
 
-        // Description needs its children collection rewritten in every compilation.
-        host.add(new DescriptionChildrenTransformer());
+    // Description needs its children collection rewritten in every compilation.
+    host.add(new DescriptionChildrenTransformer());
+  }
+
+  private void verifyRuleSupportIsNotShadowed() {
+    ClassLoader loader = RuleSupportPlugin.class.getClassLoader();
+    if (loader == null) {
+      return;
     }
+    requireSameOrigin(loader.getResource(PLUGIN), loader.getResource(SHADOWED));
+  }
 
-    private void verifyRuleSupportIsNotShadowed() {
-        ClassLoader loader = RuleSupportPlugin.class.getClassLoader();
-        if (loader == null) {
-            return;
-        }
-        requireSameOrigin(loader.getResource(PLUGIN), loader.getResource(SHADOWED));
+  /** Both classes ship together, so a different origin means something else supplied it. */
+  static void requireSameOrigin(URL plugin, URL entryPoint) {
+    String ours = containerOf(plugin, PLUGIN);
+    String resolved = containerOf(entryPoint, SHADOWED);
+    if (ours == null || resolved == null || ours.equals(resolved)) {
+      return;
     }
+    throw new IllegalStateException(
+        "teavm-rule-support is on the classpath but "
+            + "org.teavm.junit.TestEntryPoint was resolved from "
+            + resolved
+            + " instead of "
+            + ours
+            + ". TeaVM's own entry point takes precedence, so JUnit "
+            + "rules are ignored and tests pass without them. Declare "
+            + "io.instanto:teavm-rule-support before org.teavm:teavm-junit.");
+  }
 
-    /** Both classes ship together, so a different origin means something else supplied it. */
-    static void requireSameOrigin(URL plugin, URL entryPoint) {
-        String ours = containerOf(plugin, PLUGIN);
-        String resolved = containerOf(entryPoint, SHADOWED);
-        if (ours == null || resolved == null || ours.equals(resolved)) {
-            return;
-        }
-        throw new IllegalStateException("teavm-rule-support is on the classpath but "
-                + "org.teavm.junit.TestEntryPoint was resolved from " + resolved
-                + " instead of " + ours + ". TeaVM's own entry point takes precedence, so JUnit "
-                + "rules are ignored and tests pass without them. Declare "
-                + "io.instanto:teavm-rule-support before org.teavm:teavm-junit.");
+  private static String containerOf(URL resource, String name) {
+    if (resource == null) {
+      return null;
     }
-
-    private static String containerOf(URL resource, String name) {
-        if (resource == null) {
-            return null;
-        }
-        String location = resource.toString();
-        return location.endsWith(name) ? location.substring(0, location.length() - name.length()) : location;
-    }
+    String location = resource.toString();
+    return location.endsWith(name)
+        ? location.substring(0, location.length() - name.length())
+        : location;
+  }
 }

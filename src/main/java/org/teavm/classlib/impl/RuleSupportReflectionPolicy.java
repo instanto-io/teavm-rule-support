@@ -16,10 +16,9 @@ import org.teavm.extension.spi.reflection.SimpleReflectionPolicy;
  */
 @Autoregistered
 public class RuleSupportReflectionPolicy extends SimpleReflectionPolicy {
-    @Override
-    protected void setup() {
-        // Only @Test methods need to be resolvable; that is all a FrameworkMethod ever names.
-        selectClasses(withAnnotation(RunWith.class))
-                .reflectableMethods(withAnnotation(Test.class));
-    }
+  @Override
+  protected void setup() {
+    // Only @Test methods need to be resolvable; that is all a FrameworkMethod ever names.
+    selectClasses(withAnnotation(RunWith.class)).reflectableMethods(withAnnotation(Test.class));
+  }
 }

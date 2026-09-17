@@ -25,30 +25,31 @@ import org.teavm.model.emit.ValueEmitter;
 import org.teavm.model.instructions.BranchingCondition;
 
 class TestEntryPointTransformerForWholeClass extends TestEntryPointTransformer {
-    private List<MethodReference> testMethods;
+  private List<MethodReference> testMethods;
 
-    TestEntryPointTransformerForWholeClass(List<MethodReference> testMethods, String testClassName) {
-        super(testClassName);
-        this.testMethods = testMethods;
+  TestEntryPointTransformerForWholeClass(List<MethodReference> testMethods, String testClassName) {
+    super(testClassName);
+    this.testMethods = testMethods;
+  }
+
+  @Override
+  protected void generateLaunchProgram(MethodHolder method, ClassHolderTransformerContext context) {
+    ProgramEmitter pe = ProgramEmitter.create(method, context.getHierarchy());
+    ValueEmitter testName = pe.var(1, String.class);
+
+    for (MethodReference testMethod : testMethods) {
+      ValueEmitter isTest =
+          testName.invokeSpecial(
+              "equals", boolean.class, pe.constant(testMethod.toString()).cast(Object.class));
+      ForkEmitter fork = isTest.fork(BranchingCondition.NOT_EQUAL);
+      pe.enter(pe.getProgram().createBasicBlock());
+      fork.setThen(pe.getBlock());
+
+      generateSingleMethodLaunchProgram(testMethod, context, pe);
+      pe.enter(pe.getProgram().createBasicBlock());
+      fork.setElse(pe.getBlock());
     }
 
-    @Override
-    protected void generateLaunchProgram(MethodHolder method, ClassHolderTransformerContext context) {
-        ProgramEmitter pe = ProgramEmitter.create(method, context.getHierarchy());
-        ValueEmitter testName = pe.var(1, String.class);
-
-        for (MethodReference testMethod : testMethods) {
-            ValueEmitter isTest = testName.invokeSpecial("equals", boolean.class,
-                    pe.constant(testMethod.toString()).cast(Object.class));
-            ForkEmitter fork = isTest.fork(BranchingCondition.NOT_EQUAL);
-            pe.enter(pe.getProgram().createBasicBlock());
-            fork.setThen(pe.getBlock());
-
-            generateSingleMethodLaunchProgram(testMethod, context, pe);
-            pe.enter(pe.getProgram().createBasicBlock());
-            fork.setElse(pe.getBlock());
-        }
-
-        pe.construct(IllegalArgumentException.class, pe.constant("Invalid test name")).raise();
-    }
+    pe.construct(IllegalArgumentException.class, pe.constant("Invalid test name")).raise();
+  }
 }

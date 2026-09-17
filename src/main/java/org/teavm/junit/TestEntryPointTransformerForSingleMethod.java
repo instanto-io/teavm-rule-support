@@ -21,16 +21,16 @@ import org.teavm.model.MethodReference;
 import org.teavm.model.emit.ProgramEmitter;
 
 class TestEntryPointTransformerForSingleMethod extends TestEntryPointTransformer {
-    private MethodReference testMethod;
+  private MethodReference testMethod;
 
-    TestEntryPointTransformerForSingleMethod(MethodReference testMethod, String testClassName) {
-        super(testClassName);
-        this.testMethod = testMethod;
-    }
+  TestEntryPointTransformerForSingleMethod(MethodReference testMethod, String testClassName) {
+    super(testClassName);
+    this.testMethod = testMethod;
+  }
 
-    @Override
-    protected void generateLaunchProgram(MethodHolder method, ClassHolderTransformerContext context) {
-        ProgramEmitter pe = ProgramEmitter.create(method, context.getHierarchy());
-        generateSingleMethodLaunchProgram(testMethod, context, pe);
-    }
+  @Override
+  protected void generateLaunchProgram(MethodHolder method, ClassHolderTransformerContext context) {
+    ProgramEmitter pe = ProgramEmitter.create(method, context.getHierarchy());
+    generateSingleMethodLaunchProgram(testMethod, context, pe);
+  }
 }

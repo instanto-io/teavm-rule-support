@@ -48,8 +48,7 @@ public class DeclarationFormsTeaVmTest extends DeclarationFormsBase {
     }
   }
 
-  @Rule
-  public TestRule declaredAsAField = new RecordingRule("field");
+  @Rule public TestRule declaredAsAField = new RecordingRule("field");
 
   @Rule
   public TestRule declaredAsAMethod() {
