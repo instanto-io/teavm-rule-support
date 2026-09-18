@@ -26,8 +26,7 @@ jobs:
       name: Verify in ${{ matrix.browser_name }}
       goals: clean test
       maven-args: -Drule.support.test.browser=${{ matrix.runner }}
-    secrets:
-      PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+    secrets: inherit
 
   publish-snapshot:
     if: github.repository == 'instanto-io/teavm-rule-support' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -37,5 +36,4 @@ jobs:
       name: Publish Maven snapshot
       goals: deploy
       maven-args: -DskipTests
-    secrets:
-      PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+    secrets: inherit
