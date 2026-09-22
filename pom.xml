@@ -27,25 +27,24 @@
     </license>
   </licenses>
 
-  <distributionManagement>
-    <repository>
-      <id>github-teavm-rule-support</id>
-      <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/instanto-io/teavm-rule-support</url>
-    </repository>
-    <snapshotRepository>
-      <id>github-teavm-rule-support</id>
-      <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/instanto-io/teavm-rule-support</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <scm>
     <url>https://github.com/instanto-io/teavm-rule-support</url>
     <connection>scm:git:https://github.com/instanto-io/teavm-rule-support.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/instanto-io/teavm-rule-support.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
+
+
+  <!-- Bootstrap the published parent and consume Instanto snapshots by Maven coordinate. -->
+  <repositories>
+    <repository>
+      <id>forgejo</id>
+      <name>Instanto snapshots</name>
+      <url>https://packages.instanto.io/api/packages/instanto-io/maven</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
