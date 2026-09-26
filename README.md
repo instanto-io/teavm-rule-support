@@ -150,39 +150,12 @@ public final RetryRule retry = new RetryRule();
 Inherited rules are applied too, and a type implementing both interfaces is
 applied once as a `TestRule`, matching JUnit 4.13.
 
-## Add the dependency
+## Use it with TeaVM tests
 
-The project must already use JUnit 4 and TeaVM's JUnit runner. Add this module as
-a test dependency and declare it before `teavm-junit`:
-
-```xml
-<dependencies>
-  <dependency>
-    <groupId>io.instanto</groupId>
-    <artifactId>teavm-rule-support</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
-    <scope>test</scope>
-  </dependency>
-
-  <dependency>
-    <groupId>org.teavm</groupId>
-    <artifactId>teavm-junit</artifactId>
-    <version>0.15.0</version>
-    <scope>test</scope>
-  </dependency>
-</dependencies>
-```
-
-No further setup is required. The support can also arrive transitively from
-another test dependency, provided the JAR is present on the classpath TeaVM uses
-for test compilation.
-
-Classpath order matters because TeaVM's runner does not currently expose a rule
-extension point. This module supplies an extended `TestEntryPoint` and compiler
-transformers under the class names expected by `TeaVMTestRunner`. The module's
-compiler plugin checks which `TestEntryPoint` was selected. If `teavm-junit`
-wins, compilation fails with a message explaining how to correct the dependency
-order.
+Add this library to the TeaVM test classpath before `teavm-junit`. Keep using
+`TeaVMTestRunner` and ordinary JUnit `@Rule` members; no registration call is
+needed. If TeaVM selects the original test entry point first, compilation
+reports the classpath-order error rather than silently skipping rules.
 
 ## What TeaVM discovers automatically
 
@@ -231,17 +204,3 @@ TeaVM test-runner internals and the shape of JUnit's `Description` constructor,
 so upgrades to either dependency should be tested before adoption. A known
 `Description` incompatibility fails during TeaVM compilation rather than later
 in the browser.
-
-## Building and testing
-
-The test suite compiles its fixtures with TeaVM and runs them in Chrome:
-
-```bash
-mvn test
-```
-
-## Shared build parent
-
-For local builds, install the shared parent from a sibling `instanto-poms`
-checkout with `mvn -f ../instanto-poms/pom.xml install`. Release instructions
-are in `instanto-poms/RELEASING.md`.
