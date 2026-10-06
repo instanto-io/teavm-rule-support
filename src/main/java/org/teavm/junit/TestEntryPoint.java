@@ -10,7 +10,6 @@ import java.util.List;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-import org.teavm.jso.core.JSObjects;
 
 final class TestEntryPoint {
   private static Object testCase;
@@ -49,7 +48,7 @@ final class TestEntryPoint {
     String simpleName = simpleMethodName(name);
     for (Class<?> cls = target.getClass(); cls != null; cls = cls.getSuperclass()) {
       try {
-        return normalisingFrameworkMethod(cls.getDeclaredMethod(simpleName));
+        return new FrameworkMethod(cls.getDeclaredMethod(simpleName));
       } catch (NoSuchMethodException notHere) {
         continue;
       }
@@ -60,25 +59,6 @@ final class TestEntryPoint {
             + " on "
             + target.getClass().getName()
             + ". A MethodRule needs that method to be reflectable.");
-  }
-
-  /**
-   * Wraps a method so a void reflective call yields {@code null}, as the JDK specifies.
-   *
-   * <p>TeaVM 0.15 returns JavaScript {@code undefined} instead: {@code $rt_callMethod} passes the
-   * result through {@code valueToObject}, and {@code void} is the one primitive created without a
-   * conversion, so it falls back to the identity default. An {@code undefined} is neither {@code
-   * null} to a Java comparison nor safe to dereference, so it is normalised here before any rule
-   * can observe it.
-   */
-  private static FrameworkMethod normalisingFrameworkMethod(java.lang.reflect.Method method) {
-    return new FrameworkMethod(method) {
-      @Override
-      public Object invokeExplosively(Object target, Object... params) throws Throwable {
-        Object result = super.invokeExplosively(target, params);
-        return JSObjects.isUndefined(result) ? null : result;
-      }
-    };
   }
 
   /**

@@ -7,6 +7,7 @@ package io.instanto.rules;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
@@ -39,9 +40,7 @@ public class ReflectionSpikeTeaVmTest {
     Method method = ReflectionSpikeTeaVmTest.class.getDeclaredMethod("probeTarget");
     assertNotNull("getDeclaredMethod returned null", method);
     assertEquals("probeTarget", method.getName());
-    // Invoking a void method under TeaVM returns a value assertNull cannot format,
-    // so this asserts only that the reflective call completes.
-    method.invoke(this);
+    assertNull("a void method invoked reflectively returns null", method.invoke(this));
   }
 
   @Test
