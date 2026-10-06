@@ -199,7 +199,7 @@ the method cannot be resolved.
 
 ## Compatibility
 
-The current implementation targets TeaVM 0.15.0 and JUnit 4.13.2. It relies on
+The current implementation targets TeaVM 0.16.0 and JUnit 4.13.2. It relies on
 TeaVM test-runner internals and the shape of JUnit's `Description` constructor,
 so upgrades to either dependency should be tested before adoption. A known
 `Description` incompatibility fails during TeaVM compilation rather than later
