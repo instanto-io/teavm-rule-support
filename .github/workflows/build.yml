@@ -12,7 +12,7 @@ jobs:
     uses: instanto-io/instanto-poms/.github/workflows/maven-build.yml@main
     with:
       name: Verify relocation POM
-      goals: clean verify
+      goals: -U clean verify
       maven-args: -Dspotless.skip=true
     secrets: inherit
   publish-snapshot:
@@ -21,6 +21,6 @@ jobs:
     uses: instanto-io/instanto-poms/.github/workflows/maven-build.yml@main
     with:
       name: Publish relocation POM
-      goals: deploy
+      goals: -U deploy
       maven-args: -Dspotless.skip=true
     secrets: inherit
