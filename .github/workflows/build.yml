@@ -1,39 +1,26 @@
-name: build
-
+name: Verify and publish relocation
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
   packages: write
-
 jobs:
   verify:
-    name: Verify (${{ matrix.browser_name }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - browser_name: Chrome
-            runner: browser-chrome
-          - browser_name: Firefox
-            runner: browser-firefox
     uses: instanto-io/instanto-poms/.github/workflows/maven-build.yml@main
     with:
-      name: Verify in ${{ matrix.browser_name }}
-      goals: clean test
-      maven-args: -Drule.support.test.browser=${{ matrix.runner }}
+      name: Verify relocation POM
+      goals: clean verify
+      maven-args: -Dspotless.skip=true
     secrets: inherit
-
   publish-snapshot:
-    if: github.repository == 'instanto-io/teavm-rule-support' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [verify]
     uses: instanto-io/instanto-poms/.github/workflows/maven-build.yml@main
     with:
-      name: Publish Maven snapshot
+      name: Publish relocation POM
       goals: deploy
-      maven-args: -DskipTests
+      maven-args: -Dspotless.skip=true
     secrets: inherit
