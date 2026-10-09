@@ -1,5 +1,11 @@
 # TeaVM JUnit rule support
 
+> **Retired.** This library now lives in
+> [Instanto TeaVM](https://github.com/instanto-io/instanto-teavm) as
+> `io.instanto:instanto-teavm-extensions`. Replace the `teavm-rule-support`
+> dependency with it, keeping it before `teavm-junit`; nothing else changes.
+> This repository is archived and no longer published.
+
 `teavm-rule-support` adds JUnit 4 `@Rule` support to tests compiled and run
 with TeaVM's `TeaVMTestRunner`.
 
